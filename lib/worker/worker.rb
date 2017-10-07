@@ -39,6 +39,7 @@ module Gardener
     def plant_tree(tree_name)
       # tree = open_tree(tree_name)
       tree = [1 ,[[2 ,[3 , 4 ]],[3,[5,2]]]]
+      # TODO draw picture tree
       # require 'pry'; binding.pry
       tree
     end
