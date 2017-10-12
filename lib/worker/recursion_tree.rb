@@ -1,6 +1,5 @@
 module Gardener
   class Recursion
-
     attr_reader :conv_arr
 
     def initialize
@@ -9,7 +8,7 @@ module Gardener
       @conv_arr = []
     end
 
-    def recursion_tree (arr)
+    def recursion_tree(arr)
       if arr[0].kind_of?(Array)
         left = arr[0]
         right = arr[1]
