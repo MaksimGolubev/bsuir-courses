@@ -1,3 +1,4 @@
+require 'terminfo'
 require 'colorize'
 require 'yaml'
 
@@ -10,6 +11,7 @@ module Gardener
 
     def initialize(params)
       @tree_name = find_name(params)
+      @tree_range = TermInfo.screen_size[1]
     end
 
     def work
@@ -17,30 +19,41 @@ module Gardener
         FILE_LIST.each do |tree|
           puts "#{tree}.tree"
           tree = plant_tree(tree)
-          puts tree.to_s
           work_with_tree_result(tree)
           print 'Желаете продолжить?[Y/n] '
           return if gets.chomp == 'n'
         end
       elsif FILE_LIST.include?(@tree_name)
-        plant_tree(@tree_name)
-        puts SEPARATOR, @tree_name, SEPARATOR, FILE_LIST
+        tree = plant_tree(@tree_name)
+        work_with_tree_result(tree)
       else
-        return puts 'Данное дерево не растет в данном лесу.'
+        return puts 'Данное дерево не растет в данном лесу.'.yellow
       end
     end
     private
 
     def work_with_tree_result(tree)
-      return puts 'Срубить.' if tree.flatten.sum > 100
-      return puts 'Обрезать.' if tree.to_s.scan(/\[\d*\, \[/).size > 5
+      return puts 'Срубить.'.red if tree.flatten.sum > 5000
+      return puts 'Обрезать.'.yellow if tree.count > 5
     end
 
     def plant_tree(tree_name)
-      # tree = open_tree(tree_name)
-      tree = [1 ,[[2 ,[3 , 4 ]],[3,[5,2]]]]
-      # TODO draw picture tree
-      # require 'pry'; binding.pry
+      rec = Gardener::Recursion.new
+      rec.recursion_tree(open_tree(tree_name))
+      tree = rec.conv_arr.reverse
+
+      if @tree_range < 4 * tree[0].count
+        message_for_valik = "А в pyton-e бы влезло...Шучу-шучу, оставьте на курсах)"
+        message_for_valik_separator = (@tree_range - message_for_valik.size)/2 > 0 ?  '.' * ((@tree_range - message_for_valik.size)/2) : ''
+        puts  ("#{message_for_valik_separator}#{message_for_valik}#{message_for_valik_separator}").center(@tree_range).blue
+      end
+
+      tree.each do |node|
+        if @tree_range > 4 * node.count
+          puts  ('\ / ' * node.count).center(@tree_range).green
+          puts  node.join('  ').center(@tree_range).green
+        end
+      end
       tree
     end
 
@@ -51,8 +64,13 @@ module Gardener
     end
 
     def find_name(params)
-      params.each { |arg| return arg.match(/NAME=(\w*)/)[1] if arg.match(/NAME=(\w*)/) }
-      nil
+      # params.each { |arg| return arg.match(/NAME=(\w*)/)[1] if arg.match(/NAME=(\w*)/) }
+      return nil if params.empty?
+      if params[0].match(/NAME=(\w*)/)
+        params[0].match(/NAME=(\w*)/)[1]
+      else
+        raise 'Введите корректное имя дерева.'.red
+      end
     end
   end
 end
